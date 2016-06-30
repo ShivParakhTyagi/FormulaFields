@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FormulaFieldsWithMobiForms.MobiFormDataContainer
+namespace FormulaFieldsWorking_parent_child_handled.MobiFormDataContainer
 {
     public class MobilizeFormsOrganizationData
     {
@@ -26,23 +26,23 @@ namespace FormulaFieldsWithMobiForms.MobiFormDataContainer
                             FieldUserFriendlyName = "A",
                             FieldInternalName ="mf_A",
                         },
-                        new Number()
-                        {
-                            FieldUserFriendlyName = "B",
-                            FieldInternalName ="mf_B",
-                        },
-                        new Formula()
-                        {
-                            FieldUserFriendlyName = "Sum",
-                            FieldInternalName ="mf_Sum",
-                            FormulaExpression = "[A]+[B]",
-                        },
+                        //new Number()
+                        //{
+                        //    FieldUserFriendlyName = "B",
+                        //    FieldInternalName ="mf_B",
+                        //},
+                        //new Formula()
+                        //{
+                        //    FieldUserFriendlyName = "Sum",
+                        //    FieldInternalName ="mf_Sum",
+                        //    FormulaExpression = "[A]+[B]",
+                        //},
 
-                        new Number()
-                        {
-                            FieldUserFriendlyName = "C",
-                            FieldInternalName ="mf_C",
-                        },
+                        //new Number()
+                        //{
+                        //    FieldUserFriendlyName = "C",
+                        //    FieldInternalName ="mf_C",
+                        //},
 
                         new SubForm()
                         {
@@ -59,12 +59,12 @@ namespace FormulaFieldsWithMobiForms.MobiFormDataContainer
                             FormulaExpression = "SUM([Sub.C])",
                         },
 
-                        new Formula()
-                        {
-                            FieldUserFriendlyName = "Sub_Sum",
-                            FieldInternalName ="mf_Sub_Sum",
-                            FormulaExpression = "SUM([Sub.Sum])",
-                        },
+                        //new Formula()
+                        //{
+                        //    FieldUserFriendlyName = "Sub_Sum",
+                        //    FieldInternalName ="mf_Sub_Sum",
+                        //    FormulaExpression = "SUM([Sub.Sum])",
+                        //},
                     }
                 }
             }
@@ -80,22 +80,22 @@ namespace FormulaFieldsWithMobiForms.MobiFormDataContainer
                 {
                     FieldsInfo=new List<FieldsInfo>()
                     {
-                        new Number()
-                        {
-                            FieldUserFriendlyName = "A",
-                            FieldInternalName ="mf_A",
-                        },
-                        new Number()
-                        {
-                            FieldUserFriendlyName = "B",
-                            FieldInternalName ="mf_B",
-                        },
-                        new Formula()
-                        {
-                            FieldUserFriendlyName = "Sum",
-                            FieldInternalName ="mf_Sum",
-                            FormulaExpression = "[A]+[B]",
-                        },
+                        //new Number()
+                        //{
+                        //    FieldUserFriendlyName = "A",
+                        //    FieldInternalName ="mf_A",
+                        //},
+                        //new Number()
+                        //{
+                        //    FieldUserFriendlyName = "B",
+                        //    FieldInternalName ="mf_B",
+                        //},
+                        //new Formula()
+                        //{
+                        //    FieldUserFriendlyName = "Sum",
+                        //    FieldInternalName ="mf_Sum",
+                        //    FormulaExpression = "[A]+[B]",
+                        //},
 
                         new Number()
                         {
@@ -111,20 +111,26 @@ namespace FormulaFieldsWithMobiForms.MobiFormDataContainer
                             SubMobiFormInternalName = "mf_C_sub_f",
                         },
 
+                        //new Formula()
+                        //{
+                        //    FieldUserFriendlyName = "Sub_Sum",
+                        //    FieldInternalName ="mf_Sub_Sum",
+                        //    FormulaExpression = "SUM([Sub.C])",
+                        //},
+
+                        //new Formula()
+                        //{
+                        //    FieldUserFriendlyName = "Sub_Sum",
+                        //    FieldInternalName ="mf_Sub_Sum",
+                        //    FormulaExpression = "SUM([Sub.Sum])",
+                        //},
+                        
                         new Formula()
                         {
-                            FieldUserFriendlyName = "Sub_Sum",
-                            FieldInternalName ="mf_Sub_Sum",
-                            FormulaExpression = "SUM([Sub.C])",
+                            FieldUserFriendlyName = "Sum",
+                            FieldInternalName ="mf_Sum",
+                            FormulaExpression = "[parent.A]+[C]",
                         },
-
-                        new Formula()
-                        {
-                            FieldUserFriendlyName = "Sub_Sum",
-                            FieldInternalName ="mf_Sub_Sum",
-                            FormulaExpression = "SUM([Sub.Sum])",
-                        },
-
                     }
                 }
             }
@@ -140,22 +146,22 @@ namespace FormulaFieldsWithMobiForms.MobiFormDataContainer
                 {
                     FieldsInfo=new List<FieldsInfo>()
                     {
-                        new Number()
-                        {
-                            FieldUserFriendlyName = "A",
-                            FieldInternalName ="mf_A",
-                        },
-                        new Number()
-                        {
-                            FieldUserFriendlyName = "B",
-                            FieldInternalName ="mf_B",
-                        },
-                        new Formula()
-                        {
-                            FieldUserFriendlyName = "Sum",
-                            FieldInternalName ="mf_Sum",
-                            FormulaExpression = "[A]+[B]",
-                        },
+                        //new Number()
+                        //{
+                        //    FieldUserFriendlyName = "A",
+                        //    FieldInternalName ="mf_A",
+                        //},
+                        //new Number()
+                        //{
+                        //    FieldUserFriendlyName = "B",
+                        //    FieldInternalName ="mf_B",
+                        //},
+                        //new Formula()
+                        //{
+                        //    FieldUserFriendlyName = "Sum",
+                        //    FieldInternalName ="mf_Sum",
+                        //    FormulaExpression = "[A]+[B]",
+                        //},
 
 
                         new Number()
@@ -163,7 +169,13 @@ namespace FormulaFieldsWithMobiForms.MobiFormDataContainer
                             FieldUserFriendlyName = "C",
                             FieldInternalName ="mf_C",
                         },
-                        
+
+                        new Formula()
+                        {
+                            FieldUserFriendlyName = "Sum",
+                            FieldInternalName ="mf_Sum",
+                            FormulaExpression = "[parent.C]-[C]",
+                        },
                     }
                 }
             }

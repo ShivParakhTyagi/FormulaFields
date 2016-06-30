@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mobilize.Core", "Mobilize.C
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mobilize.Contract", "Mobilize.Service.Contract\Mobilize.Contract.csproj", "{D7D6F880-4818-426E-9E5B-5B412129D91D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FormulaFieldsWorking_parent_child_handled", "FormulaFieldsWorking_parent_child_handled\FormulaFieldsWorking_parent_child_handled.csproj", "{0CDD515B-930F-4A35-B599-8CE2F28DDCAF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,12 @@ Global
 		{D7D6F880-4818-426E-9E5B-5B412129D91D}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D7D6F880-4818-426E-9E5B-5B412129D91D}.WebDebug|Any CPU.ActiveCfg = WebDebug|Any CPU
 		{D7D6F880-4818-426E-9E5B-5B412129D91D}.WebDebug|Any CPU.Build.0 = WebDebug|Any CPU
+		{0CDD515B-930F-4A35-B599-8CE2F28DDCAF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CDD515B-930F-4A35-B599-8CE2F28DDCAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CDD515B-930F-4A35-B599-8CE2F28DDCAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CDD515B-930F-4A35-B599-8CE2F28DDCAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CDD515B-930F-4A35-B599-8CE2F28DDCAF}.WebDebug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CDD515B-930F-4A35-B599-8CE2F28DDCAF}.WebDebug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

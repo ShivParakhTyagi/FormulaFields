@@ -5,11 +5,10 @@ using System.Text.RegularExpressions;
 using Mobilize.Contract.CustomFields;
 using Mobilize.Contract.MobilizeDataTypes;
 using Mobilize.Contract.GetListItemsServices;
-using FormulaFieldsWithMobiForms.MobiFormDocs;
 using Newtonsoft.Json;
-using FormulaFieldsWithMobiForms;
+using FormulaFieldsWorking_parent_child_handled.MobiFormDocs;
 
-namespace Mobilize.DocDBPump
+namespace FormulaFieldsWorking_parent_child_handled
 {
     public class MobiFormDocumentBaseDecorator : MobiFormDocument
     {
@@ -233,7 +232,7 @@ namespace Mobilize.DocDBPump
             return GetKeysFromMobiForm(mobiForm);
         }
 
-        public virtual List<FieldInformation> GetKeysFromMobiForm(MobiForm mobiForm)
+        public virtual List<FieldInformation> GetKeysFromMobiForm(MobiForm mobiForm, MobiForm parentMobiForm = null)
         {
             if (MobiForm_IsNullOrEmpty(mobiForm)) return null;
             //To add new fields in every page for internal purposes [offline scenario] and tracking of record [via ID]
@@ -268,7 +267,7 @@ namespace Mobilize.DocDBPump
                                         InternalName = customField.FieldInternalName,
                                         ShowInListView = customField.ShowInListView,
                                         Sortable = customField.Sortable,
-                                        ImpactedFields = GetImpactedFieldsList(field),
+                                        ImpactedFields = GetImpactedFieldsList(field, parentMobiForm?? mobiForm),
                                         SubFormFields = null,
                                         FullName = customField.FullName,
                                     };
@@ -282,7 +281,7 @@ namespace Mobilize.DocDBPump
                                         //keyItem.AdditionalInformation.Add("SubFormMode", customField.SubFormMode);
                                     }
 
-                                    var keysOfSubForm = GetKeysFromMobiForm(customField.MobiForm);
+                                    var keysOfSubForm = GetKeysFromMobiForm(customField.MobiForm, mobiForm);
 
                                     if (keysOfSubForm != null)
                                     {
@@ -313,7 +312,7 @@ namespace Mobilize.DocDBPump
                                         InternalName = field.FieldInternalName,
                                         ShowInListView = field.ShowInListView,
                                         Sortable = field.Sortable,
-                                        ImpactedFields = GetImpactedFieldsList(field),
+                                        ImpactedFields = GetImpactedFieldsList(field, parentMobiForm ?? mobiForm),
                                         SubFormFields = null,
                                         FullName = field.FullName,
                                     };
@@ -347,7 +346,7 @@ namespace Mobilize.DocDBPump
                                     InternalName = field.FieldInternalName,
                                     ShowInListView = field.ShowInListView,
                                     Sortable = field.Sortable,
-                                    ImpactedFields = GetImpactedFieldsList(field),
+                                    ImpactedFields = GetImpactedFieldsList(field, parentMobiForm ?? mobiForm),
                                     SubFormFields = null,
                                     FullName = field.FullName,
                                 };
@@ -381,7 +380,7 @@ namespace Mobilize.DocDBPump
                                     InternalName = field.FieldInternalName,
                                     ShowInListView = field.ShowInListView,
                                     Sortable = field.Sortable,
-                                    ImpactedFields = GetImpactedFieldsList(field),
+                                    ImpactedFields = GetImpactedFieldsList(field, parentMobiForm ?? mobiForm),
                                     SubFormFields = null,
                                     FullName = field.FullName,
                                 };
@@ -418,30 +417,60 @@ namespace Mobilize.DocDBPump
             return subForms;
         }
 
-        protected virtual List<string> GetImpactedFieldsList(FieldsInfo formField)
+        protected virtual List<string> GetImpactedFieldsList(FieldsInfo formField,MobiForm currentForm)
         {
-            if (formField is SubForm)
+            if (formField is SubForm )
             {
                 return null;
             }
 
             List<string> fieldNames = new List<string>();
 
-            if (formField?.ImpactedFieldsInfosList == null)
+            if(formField?.ImpactedFieldsInfosList == null)
             {
                 return fieldNames;
             }
-            //var formname = (formField?.ParentField as SubForm)?.MobiForm?.FormName;
             foreach (var field in formField.ImpactedFieldsInfosList)
             {
+                //if (((field.ParentField as SubForm)?.MobiForm == null || (field.ParentField as SubForm).MobiForm.AllFields.Any(x => x.FullName == field.FullName)) && ((field.ParentField as SubForm)?.MobiForm?.InternalFormName == (formField.ParentField as SubForm)?.MobiForm?.InternalFormName))
                 if ((field.ParentField as SubForm)?.MobiForm?.InternalFormName == (formField.ParentField as SubForm)?.MobiForm?.InternalFormName)
                 {
-                    fieldNames.Add(field.FieldInternalName);
+                    fieldNames.Add($"this.{field.FieldInternalName}");//this
                 }
                 else
                 {
-                    fieldNames.Add($"parent.{field.FieldInternalName}");
+                    bool isInParentForm =false;
+                    foreach(var page in currentForm.Pages)
+                    {
+                        if (page?.FieldsInfo == null)
+                        {
+                            continue;
+                        }
+                        isInParentForm = page.FieldsInfo.Any(x => x != null && x.FieldInternalName == field.FieldInternalName && (x.ParentField as SubForm)?.MobiForm?.InternalFormName == (field.ParentField as SubForm)?.MobiForm?.InternalFormName);
+                        if (isInParentForm)
+                        {
+                            break;
+                        }
+                    }
+                    if(isInParentForm)
+                    {
+                        fieldNames.Add($"parent.{field.FieldInternalName}");//parent
+                    }
+                    else
+                    {
+                        fieldNames.Add($"{field.FullName}");//child
+
+                    }
                 }
+
+                //if ((field.ParentField as SubForm)?.MobiForm?.InternalFormName == (formField.ParentField as SubForm)?.MobiForm?.InternalFormName)
+                //{
+                //    fieldNames.Add(field.FieldInternalName);
+                //}
+                //else
+                //{
+                //    fieldNames.Add($"parent.{field.FieldInternalName}");
+                //}
             }
             return fieldNames;
         }
@@ -542,7 +571,7 @@ namespace Mobilize.DocDBPump
             return form;
         }
 
-        public virtual MobiForm FormulaFieldsWithDependencies(MobiForm form, MobiForm parentForm = null)
+        public virtual MobiForm FormulaFieldsWithDependencies(MobiForm form, MobiForm parentForm= null)
         {
             if (MobiForm_IsNullOrEmpty(form))
             {
@@ -567,7 +596,6 @@ namespace Mobilize.DocDBPump
                         FormulaExpressionResolver parser = new FormulaExpressionResolver(formula, form, parentForm ?? form);
                         if (parser.Valid)
                         {
-
                             formula.FormulaExpression = parser.SystemExpression;
                             if (formula.DependentFieldsInfosList == null)
                             {
@@ -719,6 +747,7 @@ namespace Mobilize.DocDBPump
 
     public class FormulaExpressionResolver
     {
+        private string parentKeyWord = "parent";
         private MobiForm _mobiForm, _rootMobiForm;
         private Formula _formula;
         private bool _isValid;
@@ -821,8 +850,7 @@ namespace Mobilize.DocDBPump
                     this._isValid = false;
                     return null;
                 }
-                //var fieldInternalName = GetFormulaFieldNameAndInitDependencyList(field.NamesHierarchy,
-                //    perfectMobiForm);
+
                 var fieldInternalName = GetFormulaFieldNameAndInitDependencyList_2(field.Name,
                     perfectMobiForm, perfectParentMobiForm);
                 if (string.IsNullOrEmpty(fieldInternalName))
@@ -916,33 +944,48 @@ namespace Mobilize.DocDBPump
             }
 
             var origField = perfectForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && x.FieldUserFriendlyName == fullUserFriendlyName);
-            if (origField == null)
-            {
-                origField = perfectForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && x.FullUserFriendlyName == fullUserFriendlyName && (x.ParentField as SubForm == null || (x.ParentField as SubForm)?.MobiForm.InternalFormName != perfectForm.InternalFormName));
-
-                if (origField != null && !(origField is SubForm))
-                {
-                    AddFieldToDependencyList(origField);
-                    return origField.FullName;
-                }
-            }
-            //&& (x.ParentField as SubForm)?.MobiForm?.InternalFormName == (x.ParentField as SubForm)?.MobiForm?.InternalFormName
 
             if (origField != null && !(origField is SubForm))
             {
                 AddFieldToDependencyList(origField);
                 return origField.FieldInternalName;
             }
+
+            origField = perfectForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && x.FullUserFriendlyName == fullUserFriendlyName && (x.ParentField as SubForm == null || (x.ParentField as SubForm)?.MobiForm.InternalFormName != perfectForm.InternalFormName));
+
+            //&& (x.ParentField as SubForm)?.MobiForm?.InternalFormName == (x.ParentField as SubForm)?.MobiForm?.InternalFormName
+
+            if (origField != null && !(origField is SubForm))
+            {
+                AddFieldToDependencyList(origField);
+                return origField.FullName;
+            }
             else
             {
-                origField = perfectParentForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && x.FieldUserFriendlyName == fullUserFriendlyName);
+                bool isInParent = false;
+                origField = perfectParentForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && (x.FieldUserFriendlyName == fullUserFriendlyName));
+                if (origField == null)
+                {
+                    origField = perfectParentForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && ($"{parentKeyWord}.{x.FieldUserFriendlyName}" == fullUserFriendlyName));
+                    isInParent = origField != null;
+                }
+
                 if (origField == null)
                 {
                     origField = perfectParentForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && x.FullUserFriendlyName == fullUserFriendlyName && (x.ParentField as SubForm == null || (x.ParentField as SubForm)?.MobiForm.InternalFormName != perfectForm.InternalFormName));
+                    if (origField == null)
+                    {
+                        //origField = perfectParentForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && ($"{parentKeyWord}.{x.FieldUserFriendlyName}" == fullUserFriendlyName) && (x.ParentField as SubForm == null || (x.ParentField as SubForm)?.MobiForm.InternalFormName != perfectForm.InternalFormName));
+                        isInParent = origField != null;
+                    }
                 }
                 if (origField != null && !(origField is SubForm))
                 {
                     AddFieldToDependencyList(origField);
+                    if (isInParent)
+                    {
+                        return $"{parentKeyWord}.{origField.FullName}";
+                    }
                     return origField.FullName;
                 }
             }
