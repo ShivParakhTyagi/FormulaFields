@@ -44,12 +44,12 @@ namespace FormulaFieldsWithMobiForms.MobiFormDataContainer
                             SubMobiForm = "A_sub_f",
                             SubMobiFormInternalName = "mf_A_sub_f",
                         },
-                        //new Formula()
-                        //{
-                        //    FieldUserFriendlyName = "Sub_Sum",
-                        //    FieldInternalName ="mf_Sub_Sum",
-                        //    FormulaExpression = "SUM([Sub.Sum])",
-                        //},
+                        new Formula()
+                        {
+                            FieldUserFriendlyName = "Sub_Sum",
+                            FieldInternalName ="mf_Sub_Sum",
+                            FormulaExpression = "SUM([Sub.Sum])",
+                        },
                     }
                 }
             }
@@ -88,12 +88,12 @@ namespace FormulaFieldsWithMobiForms.MobiFormDataContainer
                             SubMobiForm = "A_sub2_f",
                             SubMobiFormInternalName = "mf_A_sub2_f",
                         },
-                        //new Formula()
-                        //{
-                        //    FieldUserFriendlyName = "Sub_Sum",
-                        //    FieldInternalName ="mf_Sub_Sum",
-                        //    FormulaExpression = "SUM([Sub.Sum])",
-                        //},
+                        new Formula()
+                        {
+                            FieldUserFriendlyName = "Sub_Sum",
+                            FieldInternalName ="mf_Sub_Sum",
+                            FormulaExpression = "SUM([Sub.Sum])",
+                        },
                     }
                 }
             }

@@ -7,6 +7,7 @@ using Mobilize.Contract.MobilizeDataTypes;
 using Mobilize.Contract.GetListItemsServices;
 using FormulaFieldsWithMobiForms.MobiFormDocs;
 using Newtonsoft.Json;
+using FormulaFieldsWithMobiForms;
 
 namespace Mobilize.DocDBPump
 {
@@ -267,7 +268,7 @@ namespace Mobilize.DocDBPump
                                         InternalName = customField.FieldInternalName,
                                         ShowInListView = customField.ShowInListView,
                                         Sortable = customField.Sortable,
-                                        ImpactedFields = null,
+                                        ImpactedFields = GetImpactedFieldsList(field),
                                         SubFormFields = null,
                                         FullName = customField.FullName,
                                     };
@@ -312,9 +313,7 @@ namespace Mobilize.DocDBPump
                                         InternalName = field.FieldInternalName,
                                         ShowInListView = field.ShowInListView,
                                         Sortable = field.Sortable,
-                                        ImpactedFields =
-                                            field?.ImpactedFieldsInfosList?.Select(x => x.FieldInternalName).ToList() ??
-                                            new List<string>(),
+                                        ImpactedFields = GetImpactedFieldsList(field),
                                         SubFormFields = null,
                                         FullName = field.FullName,
                                     };
@@ -348,9 +347,7 @@ namespace Mobilize.DocDBPump
                                     InternalName = field.FieldInternalName,
                                     ShowInListView = field.ShowInListView,
                                     Sortable = field.Sortable,
-                                    ImpactedFields =
-                                        field?.ImpactedFieldsInfosList?.Select(x => x.FieldInternalName).ToList() ??
-                                        new List<string>(),
+                                    ImpactedFields = GetImpactedFieldsList(field),
                                     SubFormFields = null,
                                     FullName = field.FullName,
                                 };
@@ -384,9 +381,7 @@ namespace Mobilize.DocDBPump
                                     InternalName = field.FieldInternalName,
                                     ShowInListView = field.ShowInListView,
                                     Sortable = field.Sortable,
-                                    ImpactedFields =
-                                        field?.ImpactedFieldsInfosList?.Select(x => x.FieldInternalName).ToList() ??
-                                        new List<string>(),
+                                    ImpactedFields = GetImpactedFieldsList(field),
                                     SubFormFields = null,
                                     FullName = field.FullName,
                                 };
@@ -423,6 +418,33 @@ namespace Mobilize.DocDBPump
             return subForms;
         }
 
+        protected virtual List<string> GetImpactedFieldsList(FieldsInfo formField)
+        {
+            if (formField is SubForm)
+            {
+                return null;
+            }
+
+            List<string> fieldNames = new List<string>();
+
+            if (formField?.ImpactedFieldsInfosList == null)
+            {
+                return fieldNames;
+            }
+            //var formname = (formField?.ParentField as SubForm)?.MobiForm?.FormName;
+            foreach (var field in formField.ImpactedFieldsInfosList)
+            {
+                if ((field.ParentField as SubForm)?.MobiForm?.InternalFormName == (formField.ParentField as SubForm)?.MobiForm?.InternalFormName)
+                {
+                    fieldNames.Add(field.FieldInternalName);
+                }
+                else
+                {
+                    fieldNames.Add($"parent.{field.FieldInternalName}");
+                }
+            }
+            return fieldNames;
+        }
     }
 
     public class MobiFormDocumentDecorator : MobiFormDocumentBaseDecorator
@@ -516,17 +538,11 @@ namespace Mobilize.DocDBPump
                     }
                 }
             }
-            if (form.Type == "MobiForm")
-            {
-                var json = JsonConvert.SerializeObject(form, new JsonSerializerSettings()
-                {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                });
-            }
+
             return form;
         }
 
-        public virtual MobiForm FormulaFieldsWithDependencies(MobiForm form, MobiForm completeForm)
+        public virtual MobiForm FormulaFieldsWithDependencies(MobiForm form, MobiForm parentForm = null)
         {
             if (MobiForm_IsNullOrEmpty(form))
             {
@@ -548,9 +564,10 @@ namespace Mobilize.DocDBPump
                          * todo: assign dependencies to formula field...
                          */
 
-                        FormulaExpressionResolver parser = new FormulaExpressionResolver(formula, form, completeForm);
+                        FormulaExpressionResolver parser = new FormulaExpressionResolver(formula, form, parentForm ?? form);
                         if (parser.Valid)
                         {
+
                             formula.FormulaExpression = parser.SystemExpression;
                             if (formula.DependentFieldsInfosList == null)
                             {
@@ -567,16 +584,29 @@ namespace Mobilize.DocDBPump
                     if (fieldsInfo is SubForm)
                     {
                         var subFormField = fieldsInfo as SubForm;
-                        subFormField.MobiForm = FormulaFieldsWithDependencies(subFormField.MobiForm, completeForm);
+                        subFormField.MobiForm = FormulaFieldsWithDependencies(subFormField.MobiForm, form);
                     }
                 }
             }
             return form;
         }
 
-        public virtual MobiForm SetImpactedFormulaFields(MobiForm form)
+        public virtual MobiForm SetImpactedFormulaFields(MobiForm form, MobiForm parentForm = null)
         {
-            var allFormulaFields = AllFormulaFields(form);
+            List<Formula> allFormulaFields;
+            if (parentForm != null)
+            {
+                allFormulaFields = AllFormulaFields(parentForm);
+                //var allFormulaFieldsInParent = AllFormulaFields(parentForm);
+                //var unique = allFormulaFieldsInParent.Where(x => x != null && allFormulaFields != null && !allFormulaFields.Contains(x));
+                //allFormulaFields.AddRange(unique);
+            }
+            else
+            {
+                allFormulaFields = AllFormulaFields(form);
+            }
+            //var allFormulaFields = AllFormulaFields(form);
+
             if (allFormulaFields == null)
             {
                 return form;
@@ -602,7 +632,7 @@ namespace Mobilize.DocDBPump
                     if (fieldsInfo is SubForm)
                     {
                         var subForm = fieldsInfo as SubForm;
-                        subForm.MobiForm = SetImpactedFormulaFields(subForm.MobiForm);
+                        subForm.MobiForm = SetImpactedFormulaFields(subForm.MobiForm, form);
                     }
                     var impactedFields = FieldsInFormulaDependencyList(allFormulaFields, fieldsInfo);
                     if (impactedFields == null)
@@ -629,7 +659,7 @@ namespace Mobilize.DocDBPump
                     .Where(
                         x => x != null && x.DependentFieldsInfosList != null && x.DependentFieldsInfosList
                             .Any(
-                                y => y.FullName == field.FullName
+                                y => y.FullName == field.FullName && (y.ParentField as SubForm)?.MobiForm?.InternalFormName == (field.ParentField as SubForm)?.MobiForm?.InternalFormName
                             ))?.ToList();
                 var unique = impactedFields.Where(x => x != null && impactedFormulaFieldsList != null && !impactedFormulaFieldsList.Contains(x)).ToList();
                 impactedFormulaFieldsList
@@ -665,7 +695,7 @@ namespace Mobilize.DocDBPump
         {
             MobiForm completeMobiForm = GetCompleteMobiForm(formName);
             if (completeMobiForm == null) return null;
-            completeMobiForm = FormulaFieldsWithDependencies(completeMobiForm, completeMobiForm);
+            completeMobiForm = FormulaFieldsWithDependencies(completeMobiForm);
             if (completeMobiForm == null) return null;
             completeMobiForm = SetImpactedFormulaFields(completeMobiForm);
             if (completeMobiForm == null) return null;
@@ -717,12 +747,12 @@ namespace Mobilize.DocDBPump
             this._mobiForm = completeMobiForm;
             this._rootMobiForm = rootMobiForm;
             this._dependentFieldsList = new List<FieldsInfo>();
+            this._systemExpression = RealExpressionEvaluation(this._formula.FormulaExpression, this._mobiForm, this._rootMobiForm);
             Init();
         }
 
         private void Init()
         {
-            this._systemExpression = RealExpressionEvaluation(this._formula.FormulaExpression, this._mobiForm, this._rootMobiForm);
         }
 
         private List<FormulaFieldName> GetFieldsList(string expression)
@@ -771,7 +801,7 @@ namespace Mobilize.DocDBPump
             return fields;
         }
 
-        private string RealExpressionEvaluation(string userExpression, MobiForm perfectMobiForm, MobiForm perfectRootMobiForm)
+        private string RealExpressionEvaluation(string userExpression, MobiForm perfectMobiForm, MobiForm perfectParentMobiForm)
         {
             var systemExpression = $"{userExpression}";
             var allFieldsInExpression = GetFieldsList(userExpression);
@@ -794,7 +824,7 @@ namespace Mobilize.DocDBPump
                 //var fieldInternalName = GetFormulaFieldNameAndInitDependencyList(field.NamesHierarchy,
                 //    perfectMobiForm);
                 var fieldInternalName = GetFormulaFieldNameAndInitDependencyList_2(field.Name,
-                    perfectMobiForm, perfectRootMobiForm);
+                    perfectMobiForm, perfectParentMobiForm);
                 if (string.IsNullOrEmpty(fieldInternalName))
                 {
                     this._isValid = false;
@@ -878,14 +908,20 @@ namespace Mobilize.DocDBPump
 
         private string GetFormulaFieldNameAndInitDependencyList_2(string fullUserFriendlyName,
             MobiForm perfectForm,
-            MobiForm perfectRootForm)
+            MobiForm perfectParentForm)
         {
             if (perfectForm?.AllFields == null || perfectForm?.AllFields.Count == 0)
             {
                 return null;
             }
-            var origField = perfectForm?.AllFields.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && x.FieldUserFriendlyName == fullUserFriendlyName);
-            //??
+
+            var origField = perfectForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && x.FieldUserFriendlyName == fullUserFriendlyName);
+            if (origField == null)
+            {
+                origField = perfectForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && x.FullUserFriendlyName == fullUserFriendlyName && (x.ParentField as SubForm == null || (x.ParentField as SubForm)?.MobiForm.InternalFormName != perfectForm.InternalFormName));
+            }
+            //&& (x.ParentField as SubForm)?.MobiForm?.InternalFormName == (x.ParentField as SubForm)?.MobiForm?.InternalFormName
+
             if (origField != null && !(origField is SubForm))
             {
                 AddFieldToDependencyList(origField);
@@ -893,13 +929,18 @@ namespace Mobilize.DocDBPump
             }
             else
             {
-                origField = perfectRootForm?.AllFields.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && x.FullUserFriendlyName == fullUserFriendlyName);
+                origField = perfectParentForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && x.FieldUserFriendlyName == fullUserFriendlyName);
+                if (origField == null)
+                {
+                    origField = perfectParentForm?.AllFields?.FirstOrDefault(x => x != null && x.MobilizeType != "SubForm" && x.FullUserFriendlyName == fullUserFriendlyName && (x.ParentField as SubForm == null || (x.ParentField as SubForm)?.MobiForm.InternalFormName != perfectForm.InternalFormName));
+                }
                 if (origField != null && !(origField is SubForm))
                 {
                     AddFieldToDependencyList(origField);
                     return origField.FullName;
                 }
             }
+
             return null;
         }
 
