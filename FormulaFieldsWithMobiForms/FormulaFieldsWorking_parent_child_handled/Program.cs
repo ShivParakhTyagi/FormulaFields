@@ -1,4 +1,5 @@
-﻿using Mobilize.DocDBPump;
+﻿using Mobilize.Contract.GetListItemsServices;
+using Mobilize.DocDBPump;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -17,10 +18,12 @@ namespace FormulaFieldsWorking_parent_child_handled
                 bool go = true;
                 while (go)
                 {
-                    Console.Clear();
+                    //Console.Clear();
+                    //test();
                     try
                     {
                         MobiFormSql obj = new MobiFormSql(1, "my secret connection string", "user");
+                        //var result = obj.GetFormItems("B_sub_f");
                         var result = obj.GetFormItems("A_f");
                         var json = JsonConvert.SerializeObject(result);
 
@@ -37,6 +40,18 @@ namespace FormulaFieldsWorking_parent_child_handled
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+        public static void test()
+        {
+
+
+            List<FieldInformation> keysForJson;
+            MobiFormDocument mobiFormDocument = new MobiFormDocument(1);
+            //MobiDocDBForms mobiForm;
+            MobiFormDocumentDecorator decorator = new MobiFormDocumentDecorator(mobiFormDocument);
+            keysForJson = decorator.GetKeysInPerfectMobiForm("A_f");
+            keysForJson = decorator.GetKeysInPerfectMobiForm("B_sub_f");
+
         }
     }
 }
